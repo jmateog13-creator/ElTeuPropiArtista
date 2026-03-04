@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projecte: Direcció d'Art Musical</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Llibreria per confeti (gamificació) -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            /* Fons de malla (Mesh Gradient) subtil */
+            background-image:
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(14, 165, 233, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+            scroll-behavior: smooth;
+        }
+
+        /* Efecte Vidre (Glassmorphism) per a les targetes */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1.5rem;
+            transition: all 0.4s ease;
+        }
+
+        .glass-card:hover:not(.step-locked) {
+            transform: translateY(-4px);
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Estats dels passos (Gamificació pas a pas) */
+        .step-locked {
+            opacity: 0.35;
+            filter: grayscale(100%);
+            pointer-events: none;
+            user-select: none;
+            transform: scale(0.98);
+        }
+
+        .step-unlocked {
+            opacity: 1;
+            filter: grayscale(0%);
+            pointer-events: auto;
+            transform: scale(1);
+        }
+
+        .step-completed-card {
+            border-color: rgba(34, 197, 94, 0.4) !important;
+            background: rgba(20, 83, 45, 0.15) !important;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.1);
+        }
+
+        /* Scroll Reveal (Aparició suau) */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Colors i degradats per texos i insígnies */
+        .text-gradient-purple {
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .text-gradient-blue {
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .text-gradient-canva {
+            background: linear-gradient(135deg, #00C4CC, #7D2AE8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.75rem;
+            font-weight: 800;
+            font-size: 1.25rem;
+            margin-right: 1.25rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.4s ease;
+        }
+
+        .badge-text {
+            background: linear-gradient(135deg, #3b82f6, #2dd4bf);
+            color: white;
+        }
+
+        .badge-visual {
+            background: linear-gradient(135deg, #7D2AE8, #00C4CC);
+            color: white;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        /* Botons dinàmics */
+        .btn-action {
+            transition: all 0.2s ease;
+        }
+
+        .btn-action:hover {
+            transform: scale(1.03);
+        }
+
+        .btn-action:active {
+            transform: scale(0.97);
+        }
+
+        .animate-pulse-slow {
+            animation: pulse-border 3s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 15px rgba(16, 185, 129, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
+    </style>
+</head>
+
+<body class="antialiased min-h-screen pb-24 select-none">
+
+    <!-- Progress Bar (Fixed Top) -->
+    <div class="fixed top-0 left-0 w-full h-2 bg-slate-900 z-50">
+        <div id="progress-bar"
+            class="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-green-500 transition-all duration-1000 ease-out w-0 relative">
+            <div class="absolute right-0 top-0 h-full w-4 bg-white opacity-50 blur-sm shadow-[0_0_10px_white]"></div>
+        </div>
+    </div>
+
+    <!-- Header / Hero Section -->
+    <header class="pt-20 pb-12 px-4 text-center relative overflow-hidden reveal active">
+        <div class="max-w-3xl mx-auto relative z-10">
+            <span
+                class="inline-flex items-center gap-2 py-1.5 px-5 rounded-full bg-slate-800/80 border border-slate-600/50 text-xs font-bold uppercase tracking-widest text-slate-300 mb-6 backdrop-blur-sm shadow-xl">
+                <i class="fas fa-headphones-alt text-blue-400"></i> Música - 4t d'ESO
+            </span>
+            <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight mb-6">
+                Projecte: <span class="text-gradient-canva">Direcció d'Art</span>
+            </h1>
+            <p
+                class="text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed bg-slate-800/40 p-6 rounded-2xl border border-white/5 shadow-2xl backdrop-blur-md">
+                Benvingut/da al teu estudi creatiu. Escolta la teva música, relaxa't i <strong>segueix les instruccions
+                    pas a pas.</strong>
+                Avui dissenyaràs la imatge visual completa d'una nova estrella de la música. <br>
+                <span class="text-blue-300 text-sm mt-3 block"><i class="fas fa-info-circle mr-1"></i> No pots avançar
+                    al següent pas fins que no completis l'anterior!</span>
+            </p>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 md:px-8">
+
+        <!-- LLEGENDA -->
+        <div class="flex flex-wrap gap-4 justify-center mb-16 text-sm font-medium reveal active">
+            <div
+                class="bg-blue-900/40 border border-blue-500/30 text-blue-200 px-5 py-2.5 rounded-full flex items-center gap-2 backdrop-blur-sm shadow-sm">
+                <i class="fas fa-file-word text-blue-400"></i> Tasca de Text (Docs)
+            </div>
+            <div
+                class="bg-purple-900/40 border border-purple-500/30 text-purple-200 px-5 py-2.5 rounded-full flex items-center gap-2 backdrop-blur-sm shadow-sm">
+                <i class="fas fa-palette text-purple-400"></i> Tasca Visual (Canva)
+            </div>
+        </div>
+
+        <!-- FASE 1 -->
+        <div class="mb-10 text-center reveal">
+            <h2 class="inline-block text-2xl font-bold text-white border-b-2 border-slate-700 pb-2">Fase 1: La Identitat
+                Visual</h2>
+            <div
+                class="mt-4 inline-flex items-center gap-2 bg-blue-900/40 border border-blue-500/30 px-4 py-1.5 rounded-full text-blue-300 text-sm font-semibold shadow-inner">
+                <i class="far fa-clock"></i> Temps estimat: 35 minuts
+            </div>
+        </div>
+
+        <div class="space-y-8 mb-20">
+            <!-- PAS 1: DADES (Text) -->
+            <div id="step-1" class="glass-card p-6 md:p-8 step-locked reveal">
+                <div class="flex items-center mb-4">
+                    <span class="step-badge badge-text shadow-blue-500/30">1</span>
+                    <h3
+                        class="text-2xl font-bold text-slate-100 flex items-center gap-3 w-full border-b border-white/10 pb-4">
+                        Conceptes Bàsics
+                        <i class="fas fa-file-word text-blue-400 text-xl opacity-70 ml-auto"></i>
+                    </h3>
+                </div>
+
+                <div class="pl-[4.25rem]">
+                    <p class="text-slate-300 mb-5 text-lg">Inventa el teu artista respondran aquestes dades bàsiques.
+                    </p>
+
+                    <a href="https://docs.new" target="_blank"
+                        class="btn-action inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl font-bold mb-6 shadow-[0_0_15px_rgba(37,99,235,0.4)]">
+                        <i class="fas fa-external-link-alt"></i> 1. Obrir un document Nou de Google Docs
+                    </a>
+
+                    <div
+                        class="bg-black/30 border border-white/5 rounded-xl p-5 text-slate-200 font-mono text-base shadow-inner mb-6">
+                        <p class="mb-3 text-slate-400 text-sm italic">// Escriu això al teu Google Docs:</p>
+                        <p class="mb-2"><span class="text-blue-400 font-bold">></span> Nom Artístic:</p>
+                        <p class="mb-2"><span class="text-blue-400 font-bold">></span> Gènere Musical:</p>
+                        <p class="mb-2"><span class="text-blue-400 font-bold">></span> Paraules clau (Tria'n 3): <span
+                                class="text-slate-500 text-sm">(Ex: fosc, festa, tristesa, cotxes...)</span></p>
+                        <p><span class="text-blue-400 font-bold">></span> Colors de l'artista (Tria'n 2):</p>
+                    </div>
+
+                    <button id="btn-step-1" onclick="completeStep(1)"
+                        class="btn-action w-full py-4 rounded-xl bg-slate-700 hover:bg-green-600 border border-slate-600 hover:border-green-500 text-white font-bold text-lg flex justify-center items-center gap-3 shadow-lg">
+                        <i class="far fa-square text-2xl"></i> Marcar com a Fet
+                    </button>
+                </div>
+            </div>
+
+            <!-- PAS 2: BIOGRAFIA (Text) -->
+            <div id="step-2" class="glass-card p-6 md:p-8 step-locked reveal">
+                <div class="flex items-center mb-4">
+                    <span class="step-badge badge-text shadow-blue-500/30">2</span>
+                    <h3
+                        class="text-2xl font-bold text-slate-100 flex items-center gap-3 w-full border-b border-white/10 pb-4">
+                        La Biografia
+                        <i class="fas fa-file-word text-blue-400 text-xl opacity-70 ml-auto"></i>
+                    </h3>
+                </div>
+
+                <div class="pl-[4.25rem]">
+                    <p class="text-slate-300 mb-5 text-lg">Al mateix document de Google Docs, respon aquestes preguntes
+                        inventant una bona història:</p>
+
+                    <div
+                        class="bg-black/30 border border-white/5 rounded-xl p-6 text-slate-200 text-base shadow-inner mb-6">
+                        <ol class="list-decimal pl-5 space-y-3 font-medium text-slate-300">
+                            <li>Quin és el seu nom real i quina edat té?</li>
+                            <li>A quina ciutat, barri o planeta inventat va néixer?</li>
+                            <li>Com era la seva vida abans de ser artista?</li>
+                            <li>Quin va ser el moment exacte en què va decidir fer música?</li>
+                            <li>Qui el va ajudar a gravar la seva primera cançó?</li>
+                            <li>Quin és el seu missatge principal per al món?</li>
+                            <li>Té alguna fòbia, mania o secret inconfessable?</li>
+                            <li>Quin va ser el seu pitjor error o fracàs al principi?</li>
+                            <li>Què és el que més odia de la fama o de la societat?</li>
+                            <li>Com s'imagina la seva vida d'aquí a 10 anys?</li>
+                        </ol>
+                    </div>
+
+                    <button id="btn-step-2" onclick="completeStep(2)"
+                        class="btn-action w-full py-4 rounded-xl bg-slate-700 hover:bg-green-600 border border-slate-600 hover:border-green-500 text-white font-bold text-lg flex justify-center items-center gap-3 shadow-lg">
+                        <i class="far fa-square text-2xl"></i> Marcar com a Fet
+                    </button>
+                </div>
+            </div>
+
+            <!-- PAS 3: MOODBOARD (Canva) -->
+            <div id="step-3" class="glass-card p-6 md:p-8 relative overflow-hidden step-locked reveal">
+                <i class="fas fa-images absolute -right-6 -bottom-6 text-9xl text-white opacity-[0.03]"></i>
+
+                <div class="flex items-center mb-4 relative z-10">
+                    <span class="step-badge badge-visual shadow-purple-500/30">3</span>
+                    <h3
+                        class="text-2xl font-bold text-transparent bg-clip-text canva-gradient flex items-center gap-3 w-full border-b border-white/10 pb-4">
+                        El "Moodboard"
+                        <i class="fas fa-palette text-purple-400 text-xl opacity-70 ml-auto text-white"></i>
+                    </h3>
+                </div>
+
+                <div class="pl-[4.25rem] relative z-10">
+                    <p class="text-slate-300 mb-5 text-lg">Un col·laix de fotos (Coses que li agraden, roba, llocs) que
+                        defineix a l'artista visualment.</p>
+
+                    <a href="https://www.canva.com/templates/?query=moodboard" target="_blank"
+                        class="btn-action inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-5 py-2.5 rounded-xl font-bold mb-6 shadow-[0_0_15px_rgba(147,51,234,0.4)]">
+                        <i class="fas fa-external-link-alt"></i> Obrir Canva (Plantilles)
+                    </a>
+
+                    <div
+                        class="bg-gradient-to-r from-purple-900/30 to-black/30 border-l-4 border-purple-500 p-5 rounded-r-xl mb-6 shadow-md border border-white/5">
+                        <p class="font-bold text-white mb-4 text-sm uppercase tracking-wide"><i
+                                class="fas fa-list-ul text-purple-400 mr-2"></i> Passos a Canva:</p>
+                        <div class="space-y-4 text-base text-slate-300">
+                            <div class="check-item bg-black/20 p-3 rounded-lg border border-white/5">
+                                <i class="fas fa-search text-slate-400 mt-1 mr-3 w-5 text-center"></i>
+                                <span>Busca una plantilla tipus <strong>"Moodboard"</strong> o "Collage".</span>
+                            </div>
+                            <div class="check-item bg-black/20 p-3 rounded-lg border border-white/5">
+                                <i class="fas fa-image text-slate-400 mt-1 mr-3 w-5 text-center"></i>
+                                <span>Afegeix <strong>5 o 6 fotos</strong> que enganxin bé juntes.</span>
+                            </div>
+                            <div
+                                class="check-item font-semibold text-purple-200 bg-purple-900/50 p-3 rounded-lg border border-purple-500/30">
+                                <i class="fas fa-download mt-1 mr-3 w-5 text-center text-purple-400"></i>
+                                <span>Descarrega la foto generada i <strong>enganxa-la al teu Google
+                                        Docs</strong>.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="btn-step-3" onclick="completeStep(3)"
+                        class="btn-action w-full py-4 rounded-xl bg-slate-700 hover:bg-green-600 border border-slate-600 hover:border-green-500 text-white font-bold text-lg flex justify-center items-center gap-3 shadow-lg">
+                        <i class="far fa-square text-2xl"></i> Marcar com a Fet
+                    </button>
+                </div>
+            </div>
+
+            <!-- PAS 4: LOGO (Canva o Lliure) -->
+            <div id="step-4" class="glass-card p-6 md:p-8 step-locked reveal">
+                <div class="flex items-center mb-4">
+                    <span class="step-badge badge-visual shadow-purple-500/30">4</span>
+                    <h3
+                        class="text-2xl font-bold text-transparent bg-clip-text canva-gradient flex items-center gap-3 w-full border-b border-white/10 pb-4">
+                        El Logotip
+                        <i class="fas fa-gem text-purple-400 text-xl opacity-70 ml-auto text-white"></i>
+                    </h3>
+                </div>
+
+                <div class="pl-[4.25rem]">
+                    <p class="text-slate-300 mb-5 text-lg">Crea el logo oficial del teu artista per posar a samarretes o
+                        cartells.</p>
+
+                    <div
+                        class="bg-gradient-to-r from-purple-900/30 to-black/30 border-l-4 border-indigo-500 p-5 rounded-r-xl mb-6 border border-white/5">
+                        <div class="space-y-4 text-base text-slate-300">
+                            <div class="check-item bg-black/40 p-4 rounded-xl border border-white/10 shadow-md">
+                                <i class="fas fa-pencil-alt text-indigo-400 mt-1 mr-4 text-xl w-6 text-center"></i>
+                                <div>
+                                    <strong class="text-white block mb-1 text-lg">Opció A: A mà o App de
+                                        l'ordinador</strong>
+                                    Dibuixa'l en un paper i fes-li foto, o obre el <strong class="text-indigo-300">Paint
+                                        / Pissarra</strong> a l'ordinador i sigues lliure.
+                                </div>
+                            </div>
+                            <div class="text-center font-bold text-slate-500 my-2">- O BÉ -</div>
+                            <div class="check-item bg-black/40 p-4 rounded-xl border border-white/10 shadow-md">
+                                <i class="fas fa-desktop text-indigo-400 mt-1 mr-4 text-xl w-6 text-center"></i>
+                                <div>
+                                    <strong class="text-white block mb-1 text-lg">Opció B: Amb Canva</strong>
+                                    Ves a Canva, disseny "Logotip", escriu el Nom i posa un color i lletra guapíssims.
+                                </div>
+                            </div>
+                            <div
+                                class="check-item font-semibold text-indigo-200 bg-indigo-900/50 p-3 rounded-xl inline-flex items-center mt-3 w-full justify-center border border-indigo-500/40 shadow-inner">
+                                <i class="fas fa-paperclip text-indigo-400 mr-2"></i> Posa la imatge del Logo final al
+                                teu Google Docs.
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="btn-step-4" onclick="completeStep(4)"
+                        class="btn-action w-full py-4 rounded-xl bg-slate-700 hover:bg-green-600 border border-slate-600 hover:border-green-500 text-white font-bold text-lg flex justify-center items-center gap-3 shadow-lg">
+                        <i class="far fa-square text-2xl"></i> Marcar com a Fet
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PREMI FINAL SESSIÓ 1 -->
+        <div id="reward-1"
+            class="mt-10 mb-20 bg-gradient-to-r from-emerald-900/80 to-green-900/80 border-2 border-green-500 rounded-2xl p-6 md:p-8 text-center shadow-[0_0_40px_rgba(16,185,129,0.2)] relative overflow-hidden transform hover:scale-[1.02] transition-all duration-500 opacity-30 grayscale reveal">
+            <div class="absolute -right-4 -top-4 opacity-10">
+                <i class="fas fa-gamepad text-9xl text-green-400"></i>
+            </div>
+            <div class="absolute right-auto left-4 -bottom-4 opacity-10 transform -scale-x-100">
+                <i class="fas fa-headphones text-9xl text-green-400"></i>
+            </div>
+
+            <h3
+                class="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-yellow-300 mb-4 uppercase tracking-widest relative z-10 drop-shadow-xl">
+                <i class="fas fa-unlock-alt mr-2 text-yellow-300"></i> Recompensa Desbloquejada!
+            </h3>
+            <p
+                class="text-green-100 text-lg md:text-xl font-bold uppercase tracking-wide relative z-10 leading-relaxed max-w-2xl mx-auto">
+                SI EL PROFESSOR COMPROVA QUE TENS TOT AQUEST PRIMER BLOC AL TEU DOCS ALS PASSOS 1, 2, 3 I 4, TENS TEMPS
+                LLIURE A L'ORDINADOR!
+            </p>
+
+            <div
+                class="mt-8 text-red-200 text-sm md:text-base font-bold uppercase bg-black/60 inline-flex items-center gap-3 px-6 py-4 rounded-xl border border-red-500/80 relative z-10 shadow-2xl backdrop-blur-md">
+                <i class="fas fa-exclamation-triangle text-red-400 text-2xl"></i>
+                <span class="text-left">Dret a temps lliure mentre hi hagi silenci.<br>Si s'altera la convivència,
+                    s'acaba.</span>
+            </div>
+        </div>
+
+        <!-- SEPARADOR SESSIONS -->
+        <div class="flex items-center justify-center my-16 opacity-60 reveal">
+            <div class="h-px bg-gradient-to-r from-transparent via-slate-400 to-transparent w-full max-w-sm"></div>
+            <span
+                class="px-5 py-2 bg-slate-800 border border-slate-600 rounded-full text-xs font-bold tracking-widest text-slate-300 uppercase whitespace-nowrap shadow-lg">FASE
+                2: EXPANSIÓ</span>
+            <div class="h-px bg-gradient-to-r from-transparent via-slate-400 to-transparent w-full max-w-sm"></div>
+        </div>
+
+        <!-- FASE 2 -->
+        <div class="space-y-8 mb-16">
+            <!-- PAS 5: MÚSICA (Text) -->
+            <div id="step-5" class="glass-card p-6 md:p-8 step-locked reveal">
+                <div class="flex items-center mb-4">
+                    <span class="step-badge badge-text shadow-blue-500/30">5</span>
+                    <h3
+                        class="text-2xl font-bold text-slate-100 flex items-center gap-3 w-full border-b border-white/10 pb-4">
+                        El Disc Oficial (Tracklist)
+                        <i class="fas fa-compact-disc text-blue-400 text-xl opacity-70 ml-auto"></i>
+                    </h3>
+                </div>
+
+                <div class="pl-[4.25rem]">
+                    <p class="text-slate-300 mb-5 text-lg">Al teu Google Docs de sempre, crea la informació del teu
+                        primer col·lecció de temes.</p>
+
+                    <div class="grid gap-4 md:grid-cols-2 mb-6">
+                        <div
+                            class="bg-black/30 border border-white/5 rounded-xl p-6 shadow-inner hover:bg-black/40 transition-colors">
+                            <strong class="text-white block mb-3 text-lg border-b border-white/10 pb-2"><i
+                                    class="fas fa-music text-blue-400 mr-2"></i>Títol i Estil</strong>
+                            <ul class="text-base text-slate-300 space-y-2 list-disc pl-5">
+                                <li><strong>Títol de l'àlbum:</strong> (Inventat)</li>
+                                <li><strong>Estil/So principal:</strong> (Sona trist, ràpid, autotune, acústic...)</li>
+                            </ul>
+                        </div>
+                        <div
+                            class="bg-black/30 border border-white/5 rounded-xl p-6 shadow-inner hover:bg-black/40 transition-colors">
+                            <strong class="text-white block mb-3 text-lg border-b border-white/10 pb-2"><i
+                                    class="fas fa-list-ol text-blue-400 mr-2"></i>5 Cançons</strong>
+                            <p class="text-sm text-slate-400 mb-2">Una llista amb 5 títols de cançons. Pots afegir
+                                "(feat. Aitana)" etc.</p>
+                            <ol class="text-base text-slate-300 space-y-1 list-decimal pl-5">
+                                <li>(Títol 1)</li>
+                                <li>...</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <button id="btn-step-5" onclick="completeStep(5)"
+                        class="btn-action w-full py-4 rounded-xl bg-slate-700 hover:bg-green-600 border border-slate-600 hover:border-green-500 text-white font-bold text-lg flex justify-center items-center gap-3 shadow-lg">
+                        <i class="far fa-square text-2xl"></i> Marcar com a Fet
+                    </button>
+                </div>
+            </div>
+
+            <!-- PAS 6: PORTADA (Canva) -->
+            <div id="step-6" class="glass-card p-6 md:p-8 border-t-2 border-t-pink-500/50 step-locked reveal">
+                <div class="flex items-center mb-4">
+                    <span class="step-badge badge-visual shadow-pink-500/30"
+                        style="background: linear-gradient(135deg, #ec4899, #8b5cf6);">6</span>
+                    <h3
+                        class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 flex items-center gap-3 w-full border-b border-white/10 pb-4">
+                        La Portada de l'Àlbum
+                        <i class="fas fa-star text-pink-400 text-xl opacity-70 ml-auto text-white"></i>
+                    </h3>
+                </div>
+
+                <div class="pl-[4.25rem]">
+                    <p class="text-slate-300 mb-5 text-xl font-medium tracking-wide">L'obra final i definitiva! Dissenya
+                        la caràtula oficial a Canva.</p>
+
+                    <a href="https://www.canva.com/templates/?query=album-cover" target="_blank"
+                        class="btn-action inline-flex items-center gap-2 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white px-5 py-2.5 rounded-xl font-bold mb-6 shadow-[0_0_15px_rgba(244,63,94,0.4)]">
+                        <i class="fas fa-external-link-alt"></i> Obrir Canva (Portades Disc)
+                    </a>
+
+                    <div class="bg-pink-900/10 border border-pink-500/30 p-6 rounded-xl mb-6 shadow-inner">
+                        <p class="font-bold text-white mb-4 text-base flex items-center uppercase"><i
+                                class="fas fa-exclamation-circle text-pink-400 mr-2 text-xl"></i> Requisits de 10 a
+                            Canva:</p>
+                        <div class="space-y-4 text-base text-slate-300">
+                            <div class="check-item bg-black/40 p-3 rounded-lg border border-pink-500/20">
+                                <i class="fas fa-crop-alt text-green-400 mt-1 mr-4 w-5 text-center text-lg"></i>
+                                <span>El format ha de ser obligatòriament <strong>Quadrat</strong> (Format
+                                    Spotify).</span>
+                            </div>
+                            <div class="check-item bg-black/40 p-3 rounded-lg border border-pink-500/20">
+                                <i class="fas fa-stamp text-green-400 mt-1 mr-4 w-5 text-center text-lg"></i>
+                                <span>Has d'inserir el <strong>Logo</strong> (del Pas 4) sobre la imatge com si fos la
+                                    marca de l'artista.</span>
+                            </div>
+                            <div class="check-item bg-black/40 p-3 rounded-lg border border-pink-500/20">
+                                <i class="fas fa-font text-green-400 mt-1 mr-4 w-5 text-center text-lg"></i>
+                                <span>El <strong>Títol de l'Àlbum</strong> (del Pas 5) ha de llegir-se clarament.</span>
+                            </div>
+                            <div
+                                class="mt-5 pt-5 border-t border-pink-500/20 text-pink-200 font-bold flex items-center justify-center bg-pink-900/40 p-3 rounded-xl border border-pink-500/40 shadow-xl">
+                                <i class="fas fa-download mr-3 text-xl text-pink-400"></i> Descarrega la foto i posa-la
+                                al final del teu Google Docs!
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="btn-step-6" onclick="completeStep(6)"
+                        class="btn-action w-full py-5 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:from-green-500 hover:to-emerald-500 text-white font-black text-xl flex justify-center items-center gap-3 shadow-[0_0_20px_rgba(236,72,153,0.3)] transition-all">
+                        <i class="fas fa-rocket text-2xl"></i> Finalitzar i Entregar!
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ENTREGA RESUM (Només visible al final) -->
+        <div id="final-check"
+            class="hidden mb-10 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 rounded-2xl p-8 text-center shadow-2xl relative overflow-hidden reveal">
+            <div
+                class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-pulse-slow">
+            </div>
+            <h3 class="text-3xl font-black text-white mb-4 drop-shadow-md">🎉 TOT A PUNT PER ENTREGAR!</h3>
+            <p class="text-slate-300 mb-6 text-lg max-w-xl mx-auto">
+                No tanquis res encara! Llegeix aquesta llista. ¿Ho tens TOT dins el text del Google Docs abans
+                d'enviar-lo?
+            </p>
+            <div class="inline-flex flex-wrap justify-center gap-3 text-base">
+                <span
+                    class="bg-black/40 border border-white/10 px-4 py-2 rounded-full text-slate-200 shadow-sm font-medium"><i
+                        class="fas fa-check-circle text-green-400 mr-2"></i>1. Dades Bàsiques</span>
+                <span
+                    class="bg-black/40 border border-white/10 px-4 py-2 rounded-full text-slate-200 shadow-sm font-medium"><i
+                        class="fas fa-check-circle text-green-400 mr-2"></i>2. Biografia</span>
+                <span
+                    class="bg-black/40 border border-white/10 px-4 py-2 rounded-full text-slate-200 shadow-sm font-medium"><i
+                        class="fas fa-check-circle text-green-400 mr-2"></i>3. Imatge Moodboard</span>
+                <span
+                    class="bg-black/40 border border-white/10 px-4 py-2 rounded-full text-slate-200 shadow-sm font-medium"><i
+                        class="fas fa-check-circle text-green-400 mr-2"></i>4. Imatge Logo</span>
+                <span
+                    class="bg-black/40 border border-white/10 px-4 py-2 rounded-full text-slate-200 shadow-sm font-medium"><i
+                        class="fas fa-check-circle text-green-400 mr-2"></i>5. Títol Disc + 5 Cançons</span>
+                <span
+                    class="bg-black/40 border border-white/10 px-4 py-2 rounded-full text-slate-200 shadow-sm font-medium"><i
+                        class="fas fa-check-circle text-green-400 mr-2"></i>6. Imatge Portada Final</span>
+            </div>
+            <p class="mt-8 text-xl font-bold text-yellow-300">AVISA AL PROFESSOR PERQUÈ HO REVISI!</p>
+        </div>
+
+        <!-- PREMI FINAL ABSOLUT -->
+        <div id="reward-2"
+            class="mt-10 mb-20 bg-gradient-to-r from-green-900/80 to-emerald-900/80 border-2 border-green-500 rounded-2xl p-6 md:p-10 text-center shadow-[0_0_40px_rgba(16,185,129,0.2)] relative overflow-hidden transform transition-all duration-500 opacity-30 grayscale reveal">
+            <div class="absolute -right-4 -top-4 opacity-10">
+                <i class="fas fa-trophy text-9xl text-yellow-400"></i>
+            </div>
+            <div class="absolute right-auto left-4 -bottom-4 opacity-10">
+                <i class="fas fa-star text-9xl text-yellow-400"></i>
+            </div>
+
+            <h3
+                class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-yellow-300 mb-6 uppercase tracking-widest relative z-10 drop-shadow-xl">
+                <i class="fas fa-rocket mr-3 text-yellow-300"></i> PROJECTE COMPLETAT!
+            </h3>
+            <p
+                class="text-white text-xl md:text-2xl font-bold uppercase tracking-wide relative z-10 leading-relaxed mb-8">
+                SI EL PROFESSOR HA DONAT EL VIST-I-PLAU, ETS LLIURE AQUESTA CLASSE.
+            </p>
+
+            <div
+                class="mt-2 text-white/90 text-base md:text-xl font-bold uppercase bg-black/50 border border-white/10 inline-block px-8 py-5 rounded-xl shadow-2xl backdrop-blur-md relative z-10">
+                <i class="fas fa-check-double text-green-400 mr-2 text-2xl align-middle"></i> HAS FET UNA FEINA
+                EXCEL·LENT.
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="mt-20 py-10 text-center border-t border-white/5 relative z-10">
+        <p class="text-slate-500 text-sm font-medium mb-4">Projecte: Direcció d'Art Musical · 4t d'ESO</p>
+        <button onclick="resetProgress()" class="text-xs text-slate-600 hover:text-red-400 underline transition-colors">
+            <i class="fas fa-trash-alt mr-1"></i> Reiniciar Progrés i Esborrar Memòria
+        </button>
+        <p class="text-[10px] text-slate-700 mt-2">Dades guardades només al navegador actual.</p>
+    </footer>
+
+    <!-- LOGIC SCRIPT (Interactivitat, Gamificació i Confeti) -->
+    <script>
+        const totalSteps = 6;
+        let currentStep = 1;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initScrollReveal();
+            loadProgress();
+        });
+
+        // Observador d'elements al fer scroll, afegeix classe '.active'
+        function initScrollReveal() {
+            const reveals = document.querySelectorAll('.reveal');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+
+            reveals.forEach(reveal => observer.observe(reveal));
+        }
+
+        // Recuperar per on anava l'alumne si recarrega la pàgina
+        function loadProgress() {
+            let savedProgress = localStorage.getItem('artDirectionProgress');
+
+            if (savedProgress) {
+                let completed = parseInt(savedProgress);
+
+                // Pintar de verd i desbloquejar tots els ja completats
+                for (let i = 1; i <= completed; i++) {
+                    applyCompletedVisuals(i);
+                }
+
+                // Determinar quin és el següent pas
+                currentStep = completed < totalSteps ? completed + 1 : totalSteps;
+
+                // Desbloquejar el pas actiu
+                unlockStepUI(currentStep);
+                updateProgressBar(completed);
+                checkRewards(completed);
+            } else {
+                // Si és nou, desbloqueja el 1r
+                unlockStepUI(1);
+            }
+        }
+
+        // Funció que crida el botó verd "Marcar com a fet"
+        function completeStep(stepNumber) {
+            applyCompletedVisuals(stepNumber);
+            shootConfetti(); // BAM!
+
+            let completedSoFar = stepNumber;
+            localStorage.setItem('artDirectionProgress', stepNumber);
+
+            if (stepNumber < totalSteps) {
+                let nextStep = stepNumber + 1;
+                unlockStepUI(nextStep); // Desbloqueja el següent visualment
+                currentStep = nextStep;
+
+                // Auto-escrolejar al nou repte suauet après de 400ms
+                setTimeout(() => {
+                    document.getElementById('step-' + nextStep).scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 500);
+            } else {
+                // Ha acabat tot! (Pas 6)
+                setTimeout(() => {
+                    document.getElementById('reward-2').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    shootMegaConfetti();
+                }, 800);
+            }
+
+            updateProgressBar(completedSoFar);
+            checkRewards(completedSoFar);
+        }
+
+        // Substitueix l'HTML perquè es vegi verdet, canvia l'icone
+        function applyCompletedVisuals(step) {
+            let card = document.getElementById('step-' + step);
+            let btn = document.getElementById('btn-step-' + step);
+
+            if (card) {
+                card.classList.remove('step-locked');
+                card.classList.add('step-unlocked', 'step-completed-card');
+
+                // Canviar el número per un tic
+                let badge = card.querySelector('.step-badge');
+                if (badge) {
+                    badge.innerHTML = '<i class="fas fa-check"></i>';
+                    badge.classList.remove('badge-text', 'badge-visual');
+                    badge.style.background = 'linear-gradient(135deg, #22c55e, #10b981)';
+                }
+            }
+
+            // Botó verd de completat
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-check-double text-2xl"></i> PAS COMPLETAT';
+                btn.classList.remove('bg-slate-700', 'hover:bg-green-600', 'text-white', 'border-slate-600', 'hover:border-green-500', 'bg-gradient-to-r', 'from-pink-600', 'to-purple-600');
+                btn.classList.add('bg-green-500/20', 'text-green-400', 'cursor-default', 'border', 'border-green-500/50');
+                btn.onclick = null; // Important: no tornar a fer clic
+                btn.classList.remove('btn-action');
+            }
+        }
+
+        function unlockStepUI(step) {
+            let card = document.getElementById('step-' + step);
+            if (card) {
+                card.classList.remove('step-locked');
+                card.classList.add('step-unlocked');
+            }
+        }
+
+        function updateProgressBar(completedSteps) {
+            let percentage = (completedSteps / totalSteps) * 100;
+            document.getElementById('progress-bar').style.width = percentage + '%';
+        }
+
+        // Ilumina els premis intermedis formals
+        function checkRewards(completedSteps) {
+            if (completedSteps >= 4) {
+                let reward1 = document.getElementById('reward-1');
+                reward1.classList.remove('opacity-30', 'grayscale');
+                reward1.classList.add('animate-pulse-slow', 'opacity-100');
+            }
+            if (completedSteps >= 6) {
+                // Premi final absolut
+                let reward2 = document.getElementById('reward-2');
+                reward2.classList.remove('opacity-30', 'grayscale');
+                reward2.classList.add('animate-pulse-slow', 'opacity-100');
+
+                let finalCheck = document.getElementById('final-check');
+                finalCheck.classList.remove('hidden');
+                // Donar una miqueta de temps perquè passi d'amagat a visible per animar revelació si cal
+            }
+        }
+
+        // ANTI-COPIA / ANTI-IA (Gamificació Restrictiva)
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        document.addEventListener('keydown', function (e) {
+            // Prevenir Ctrl+C, Ctrl+V, Ctrl+U (Ver código), Cmd+C (Mac), Cmd+V (Mac)
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'v' || e.key === 'u' || e.key === 's')) {
+                e.preventDefault();
+                showAntiCopyWarning();
+            }
+        });
+
+        document.addEventListener('copy', function (e) {
+            e.preventDefault();
+            showAntiCopyWarning();
+        });
+
+        function showAntiCopyWarning() {
+            // Mostrar un petit missatge divertit si intenten copiar
+            const warning = document.createElement('div');
+            warning.innerHTML = '<i class="fas fa-robot text-red-400 mr-2"></i> Ui, ui, ui! El mètode anti-IA t\'ha pillat. Has d\'escriure tu mateix/a! 😎';
+            warning.className = 'fixed bottom-5 right-5 bg-red-900 border border-red-500 text-white px-6 py-4 rounded-xl shadow-2xl z-50 transform transition-all duration-300 translate-y-20 opacity-0 flex items-center gap-2 font-bold';
+            document.body.appendChild(warning);
+
+            // Animar entrada
+            setTimeout(() => {
+                warning.classList.remove('translate-y-20', 'opacity-0');
+            }, 10);
+
+            // Eliminar alert al cap de 3 segons
+            setTimeout(() => {
+                warning.classList.add('translate-y-20', 'opacity-0');
+                setTimeout(() => warning.remove(), 300);
+            }, 3000);
+        }
+
+        // Boto de reinici ocult a sota
+        function resetProgress() {
+            if (confirm("⚠ ATENCIÓ! Es perdrà el teu progrés de la barra i els passos (no el Canva ni el Google Docs, només aquesta pàgina). \n\nEstàs segur/a de voler REINICIAR-HO TOT?")) {
+                localStorage.removeItem('artDirectionProgress');
+                location.reload();
+            }
+        }
+
+        // Efete bàsic tipus joc
+        function shootConfetti() {
+            var defaults = { origin: { y: 0.7 }, zIndex: 100 };
+            confetti(Object.assign({}, defaults, { particleCount: 50, spread: 40, colors: ['#26ccff', '#a25afd', '#22c55e'] }));
+        }
+
+        // Super efecte
+        function shootMegaConfetti() {
+            var duration = 4 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
+
+            var interval = setInterval(function () {
+                var timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+                var particleCount = 50 * (timeLeft / duration);
+
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+
+        function randomInRange(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+    </script>
+</body>
+
+</html>
