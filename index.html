@@ -252,10 +252,42 @@
                 </div>
             </div>
 
-            <!-- PAS 2: BIOGRAFIA (Text) -->
+            <!-- NOU PAS 2: DESCRIPCIÓ FÍSICA (Text) -->
             <div id="step-2" class="glass-card p-6 md:p-8 step-locked reveal">
                 <div class="flex items-center mb-4">
                     <span class="step-badge badge-text shadow-blue-500/30">2</span>
+                    <h3
+                        class="text-2xl font-bold text-slate-100 flex items-center gap-3 w-full border-b border-white/10 pb-4">
+                        Descripció Física i Estil
+                        <i class="fas fa-file-word text-blue-400 text-xl opacity-70 ml-auto"></i>
+                    </h3>
+                </div>
+
+                <div class="pl-[4.25rem]">
+                    <p class="text-slate-300 mb-5 text-lg">Abans de saber la seva història, com és físicament la persona
+                        que has creat?</p>
+
+                    <div
+                        class="bg-black/30 border border-white/5 rounded-xl p-6 text-slate-200 text-base shadow-inner mb-6">
+                        <ul class="list-disc pl-5 space-y-3 font-medium text-slate-300">
+                            <li>Com és el seu cabell? (Color, forma, pentinat...)</li>
+                            <li>Té algun tret físic destacat? (Tatuatges, cicatrius, ulls cridaners...)</li>
+                            <li>Com vesteix normalment? (Estil urbà, roba ampla, texans, colors...)</li>
+                            <li>Quin és el seu accessori clau? (Cadenes, ulleres de sol, un barret antic...)</li>
+                        </ul>
+                    </div>
+
+                    <button id="btn-step-2" onclick="completeStep(2)"
+                        class="btn-action w-full py-4 rounded-xl bg-slate-700 hover:bg-green-600 border border-slate-600 hover:border-green-500 text-white font-bold text-lg flex justify-center items-center gap-3 shadow-lg">
+                        <i class="far fa-square text-2xl"></i> Marcar com a Fet
+                    </button>
+                </div>
+            </div>
+
+            <!-- PAS 3 (Antic 2): BIOGRAFIA (Text) -->
+            <div id="step-3" class="glass-card p-6 md:p-8 step-locked reveal">
+                <div class="flex items-center mb-4">
+                    <span class="step-badge badge-text shadow-blue-500/30">3</span>
                     <h3
                         class="text-2xl font-bold text-slate-100 flex items-center gap-3 w-full border-b border-white/10 pb-4">
                         La Biografia
@@ -283,19 +315,19 @@
                         </ol>
                     </div>
 
-                    <button id="btn-step-2" onclick="completeStep(2)"
+                    <button id="btn-step-3" onclick="completeStep(3)"
                         class="btn-action w-full py-4 rounded-xl bg-slate-700 hover:bg-green-600 border border-slate-600 hover:border-green-500 text-white font-bold text-lg flex justify-center items-center gap-3 shadow-lg">
                         <i class="far fa-square text-2xl"></i> Marcar com a Fet
                     </button>
                 </div>
             </div>
 
-            <!-- PAS 3: MOODBOARD (Canva) -->
-            <div id="step-3" class="glass-card p-6 md:p-8 relative overflow-hidden step-locked reveal">
+            <!-- PAS 4 (Antic 3): MOODBOARD (Canva) -->
+            <div id="step-4" class="glass-card p-6 md:p-8 relative overflow-hidden step-locked reveal">
                 <i class="fas fa-images absolute -right-6 -bottom-6 text-9xl text-white opacity-[0.03]"></i>
 
                 <div class="flex items-center mb-4 relative z-10">
-                    <span class="step-badge badge-visual shadow-purple-500/30">3</span>
+                    <span class="step-badge badge-visual shadow-purple-500/30">4</span>
                     <h3
                         class="text-2xl font-bold text-transparent bg-clip-text canva-gradient flex items-center gap-3 w-full border-b border-white/10 pb-4">
                         El "Moodboard"
@@ -334,17 +366,17 @@
                         </div>
                     </div>
 
-                    <button id="btn-step-3" onclick="completeStep(3)"
+                    <button id="btn-step-4" onclick="completeStep(4)"
                         class="btn-action w-full py-4 rounded-xl bg-slate-700 hover:bg-green-600 border border-slate-600 hover:border-green-500 text-white font-bold text-lg flex justify-center items-center gap-3 shadow-lg">
                         <i class="far fa-square text-2xl"></i> Marcar com a Fet
                     </button>
                 </div>
             </div>
 
-            <!-- PAS 4: LOGO (Canva o Lliure) -->
-            <div id="step-4" class="glass-card p-6 md:p-8 step-locked reveal">
+            <!-- PAS 5 (Antic 4): LOGO (Canva o Lliure) -->
+            <div id="step-5" class="glass-card p-6 md:p-8 step-locked reveal">
                 <div class="flex items-center mb-4">
-                    <span class="step-badge badge-visual shadow-purple-500/30">4</span>
+                    <span class="step-badge badge-visual shadow-purple-500/30">5</span>
                     <h3
                         class="text-2xl font-bold text-transparent bg-clip-text canva-gradient flex items-center gap-3 w-full border-b border-white/10 pb-4">
                         El Logotip
@@ -384,7 +416,7 @@
                         </div>
                     </div>
 
-                    <button id="btn-step-4" onclick="completeStep(4)"
+                    <button id="btn-step-5" onclick="completeStep(5)"
                         class="btn-action w-full py-4 rounded-xl bg-slate-700 hover:bg-green-600 border border-slate-600 hover:border-green-500 text-white font-bold text-lg flex justify-center items-center gap-3 shadow-lg">
                         <i class="far fa-square text-2xl"></i> Marcar com a Fet
                     </button>
@@ -408,8 +440,8 @@
             </h3>
             <p
                 class="text-green-100 text-lg md:text-xl font-bold uppercase tracking-wide relative z-10 leading-relaxed max-w-2xl mx-auto">
-                SI EL PROFESSOR COMPROVA QUE TENS TOT AQUEST PRIMER BLOC AL TEU DOCS ALS PASSOS 1, 2, 3 I 4, TENS TEMPS
-                LLIURE A L'ORDINADOR!
+                SI EL PROFESSOR COMPROVA QUE TENS TOT AQUEST PRIMER BLOC AL TEU DOCS ALS PASSOS 1, 2, 3, 4 I 5, TENS
+                TEMPS LLIURE A L'ORDINADOR!
             </p>
 
             <div
@@ -431,10 +463,10 @@
 
         <!-- FASE 2 -->
         <div class="space-y-8 mb-16">
-            <!-- PAS 5: MÚSICA (Text) -->
-            <div id="step-5" class="glass-card p-6 md:p-8 step-locked reveal">
+            <!-- PAS 6 (Antic 5): MÚSICA (Text) -->
+            <div id="step-6" class="glass-card p-6 md:p-8 step-locked reveal">
                 <div class="flex items-center mb-4">
-                    <span class="step-badge badge-text shadow-blue-500/30">5</span>
+                    <span class="step-badge badge-text shadow-blue-500/30">6</span>
                     <h3
                         class="text-2xl font-bold text-slate-100 flex items-center gap-3 w-full border-b border-white/10 pb-4">
                         El Disc Oficial (Tracklist)
@@ -469,18 +501,18 @@
                         </div>
                     </div>
 
-                    <button id="btn-step-5" onclick="completeStep(5)"
+                    <button id="btn-step-6" onclick="completeStep(6)"
                         class="btn-action w-full py-4 rounded-xl bg-slate-700 hover:bg-green-600 border border-slate-600 hover:border-green-500 text-white font-bold text-lg flex justify-center items-center gap-3 shadow-lg">
                         <i class="far fa-square text-2xl"></i> Marcar com a Fet
                     </button>
                 </div>
             </div>
 
-            <!-- PAS 6: PORTADA (Canva) -->
-            <div id="step-6" class="glass-card p-6 md:p-8 border-t-2 border-t-pink-500/50 step-locked reveal">
+            <!-- PAS 7 (Antic 6): PORTADA (Canva) -->
+            <div id="step-7" class="glass-card p-6 md:p-8 border-t-2 border-t-pink-500/50 step-locked reveal">
                 <div class="flex items-center mb-4">
                     <span class="step-badge badge-visual shadow-pink-500/30"
-                        style="background: linear-gradient(135deg, #ec4899, #8b5cf6);">6</span>
+                        style="background: linear-gradient(135deg, #ec4899, #8b5cf6);">7</span>
                     <h3
                         class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 flex items-center gap-3 w-full border-b border-white/10 pb-4">
                         La Portada de l'Àlbum
@@ -509,12 +541,12 @@
                             </div>
                             <div class="check-item bg-black/40 p-3 rounded-lg border border-pink-500/20">
                                 <i class="fas fa-stamp text-green-400 mt-1 mr-4 w-5 text-center text-lg"></i>
-                                <span>Has d'inserir el <strong>Logo</strong> (del Pas 4) sobre la imatge com si fos la
+                                <span>Has d'inserir el <strong>Logo</strong> (del Pas 5) sobre la imatge com si fos la
                                     marca de l'artista.</span>
                             </div>
                             <div class="check-item bg-black/40 p-3 rounded-lg border border-pink-500/20">
                                 <i class="fas fa-font text-green-400 mt-1 mr-4 w-5 text-center text-lg"></i>
-                                <span>El <strong>Títol de l'Àlbum</strong> (del Pas 5) ha de llegir-se clarament.</span>
+                                <span>El <strong>Títol de l'Àlbum</strong> (del Pas 6) ha de llegir-se clarament.</span>
                             </div>
                             <div
                                 class="mt-5 pt-5 border-t border-pink-500/20 text-pink-200 font-bold flex items-center justify-center bg-pink-900/40 p-3 rounded-xl border border-pink-500/40 shadow-xl">
@@ -524,7 +556,7 @@
                         </div>
                     </div>
 
-                    <button id="btn-step-6" onclick="completeStep(6)"
+                    <button id="btn-step-7" onclick="completeStep(7)"
                         class="btn-action w-full py-5 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:from-green-500 hover:to-emerald-500 text-white font-black text-xl flex justify-center items-center gap-3 shadow-[0_0_20px_rgba(236,72,153,0.3)] transition-all">
                         <i class="fas fa-rocket text-2xl"></i> Finalitzar i Entregar!
                     </button>
@@ -549,19 +581,22 @@
                         class="fas fa-check-circle text-green-400 mr-2"></i>1. Dades Bàsiques</span>
                 <span
                     class="bg-black/40 border border-white/10 px-4 py-2 rounded-full text-slate-200 shadow-sm font-medium"><i
-                        class="fas fa-check-circle text-green-400 mr-2"></i>2. Biografia</span>
+                        class="fas fa-check-circle text-green-400 mr-2"></i>2. Físic i Estil</span>
                 <span
                     class="bg-black/40 border border-white/10 px-4 py-2 rounded-full text-slate-200 shadow-sm font-medium"><i
-                        class="fas fa-check-circle text-green-400 mr-2"></i>3. Imatge Moodboard</span>
+                        class="fas fa-check-circle text-green-400 mr-2"></i>3. Biografia</span>
                 <span
                     class="bg-black/40 border border-white/10 px-4 py-2 rounded-full text-slate-200 shadow-sm font-medium"><i
-                        class="fas fa-check-circle text-green-400 mr-2"></i>4. Imatge Logo</span>
+                        class="fas fa-check-circle text-green-400 mr-2"></i>4. Moodboard</span>
                 <span
                     class="bg-black/40 border border-white/10 px-4 py-2 rounded-full text-slate-200 shadow-sm font-medium"><i
-                        class="fas fa-check-circle text-green-400 mr-2"></i>5. Títol Disc + 5 Cançons</span>
+                        class="fas fa-check-circle text-green-400 mr-2"></i>5. Logo</span>
                 <span
                     class="bg-black/40 border border-white/10 px-4 py-2 rounded-full text-slate-200 shadow-sm font-medium"><i
-                        class="fas fa-check-circle text-green-400 mr-2"></i>6. Imatge Portada Final</span>
+                        class="fas fa-check-circle text-green-400 mr-2"></i>6. Disc i Cançons</span>
+                <span
+                    class="bg-black/40 border border-white/10 px-4 py-2 rounded-full text-slate-200 shadow-sm font-medium"><i
+                        class="fas fa-check-circle text-green-400 mr-2"></i>7. Portada Final</span>
             </div>
             <p class="mt-8 text-xl font-bold text-yellow-300">AVISA AL PROFESSOR PERQUÈ HO REVISI!</p>
         </div>
@@ -604,7 +639,7 @@
 
     <!-- LOGIC SCRIPT (Interactivitat, Gamificació i Confeti) -->
     <script>
-        const totalSteps = 6;
+        const totalSteps = 7;
         let currentStep = 1;
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -723,12 +758,12 @@
 
         // Ilumina els premis intermedis formals
         function checkRewards(completedSteps) {
-            if (completedSteps >= 4) {
+            if (completedSteps >= 5) {
                 let reward1 = document.getElementById('reward-1');
                 reward1.classList.remove('opacity-30', 'grayscale');
                 reward1.classList.add('animate-pulse-slow', 'opacity-100');
             }
-            if (completedSteps >= 6) {
+            if (completedSteps >= 7) {
                 // Premi final absolut
                 let reward2 = document.getElementById('reward-2');
                 reward2.classList.remove('opacity-30', 'grayscale');
